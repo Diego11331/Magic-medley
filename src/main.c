@@ -1,44 +1,57 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <stdio.h>
+
+#define G 400
+#define PLAYER_JUMP_SPD 350f
+#define PLAYER_HOR_SPD 200f
+
+//Estructuras del jugador y los obstaculos
+typedef struct Player{
+    int helth;
+    float speed;
+    bool canJump;
+    Vector2 position;
+}Player;
+typedef struct Sructure{
+    Rectangle rect;
+    Color color;
+}Structure;
+
+
 int main(void)
 {
     const int screenWidth = 500;
     const int screenHeight = 500;
     
-    float dt;
-    float speed=200;
-    Vector2 pos=(Vector2){screenWidth/2,screenHeight/2};
-    Vector2 dir=(Vector2){0,0};
-    
-    Camera2D camera={0};
-    camera.target=pos;
-    camera.offset=(Vector2){screenWidth/2,screenHeight/2};
-    camera.zoom=1.0f;
-    
-    InitWindow(screenWidth, screenHeight, "Game");
+    InitWindow(screenWidth, screenHeight, "Magic medley");
+
+    //Variables player
+    Player player;
+    player.helth=50;
+    player.position=(Vector2){400,280};
+    player.speed=0;
+    player.canJump=false;
+
+    //Variables obstaculo
+    Structure structures[]={
+        {{0,0,1000,400},LIGHTGRAY},
+        {{0,400,1000,200},GRAY},
+        {{300,200,400,10},GRAY},
+        {{250,300,100,10},GRAY},
+        {{650,300,100,10},GRAY},
+    };
+
+    //Obtengo la cantidad de estructuras
+    int structuresLenght = sizeof(structures)/sizeof(structures[0]);
+
 
     while (!WindowShouldClose())
     {
-        dir.x=(int)IsKeyDown(KEY_D)-(int)IsKeyDown(KEY_A);
-        dir.y=(int)IsKeyDown(KEY_S)-(int)IsKeyDown(KEY_W);
-        dir=Vector2Normalize(dir);
-        
-        dt=GetFrameTime();
-        
-        pos.x+=dir.x*speed*dt;
-        pos.y+=dir.y*speed*dt;
-        
-        camera.target=pos;
-        
+        float dt=GetFrameTime();
+
         BeginDrawing();
             ClearBackground(RAYWHITE);
-            BeginMode2D(camera);
-            
-            DrawCircle(pos.x, pos.y, 50, RED);
-            DrawCircle(0, 0, 50, BLUE);
-
-            EndMode2D();
         EndDrawing();
     }
 
