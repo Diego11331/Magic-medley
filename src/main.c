@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <stdio.h>
+#include "animations.h"
 
 #define SCREEN_W 1280
 #define SCREEN_H 720
@@ -16,13 +17,14 @@
 #define COYOTE_TIME 0.1f //Tiempo para saltar luego de caer de plataforma
 #define JUMP_BUFFER_TIME 0.12f //Tiempo para saltar sin haber tocado la plataforma
 
-#define DASH_COLDAWN 2.0f //Tiempo de recarga del dash
+#define DASH_COLDAWN 1.0f //Tiempo de recarga del dash
 #define MAX_DASH_DIST 200.0f //Distancia del dash
 
 //Estructuras del jugador y los obstaculos
 typedef struct Player{
     //Propiedades
     int helth;
+    int direction;
     Vector2 position;
     Vector2 velocity;
     Vector2 size;
@@ -36,39 +38,99 @@ typedef struct Player{
     //Controles
     int keyLeft,keyRight,keyJump,keyPick,keyChange,keyAttack;
     //Manejar dash
-    float lastTapTime;
+    float lastLeftTapTime;
+    float lastRightTapTime;
     float lastDashTime;
     bool isDashing;
     float firstDashPos;
-    //Animaciones
-    
 }Player;
 
 typedef struct Sructure{
     Rectangle rect;
-    Texture2D sprite;
 }Structure;
 
+
 //Variables obstaculo
-const int brickWitdth=32;
-Structure structures[]={
-    {{80,SCREEN_H-32,brickWitdth*35,32}}, //BASE
-    {{300,500,brickWitdth*10,32}},
-    {{250,600,brickWitdth*10,32}},
-    {{650,400,brickWitdth*10,32}}
+const int brickWidth=32;
+Structure structures[] = {
+
+    // ===== SUELO =====
+
+    {{0,    SCREEN_H-32, brickWidth*10, 32}},
+    {{448,  SCREEN_H-32, brickWidth*12, 32}},
+    {{960,  SCREEN_H-32, brickWidth*10, 32}},
+
+    // ===== PAREDES EXTERNAS =====
+
+    {{0,520,32,168}},
+    {{SCREEN_W-32,520,32,168}},
+
+    // ===== COBERTURAS BAJAS =====
+
+    {{256,624,brickWidth*2,64}},
+    {{960,624,brickWidth*2,64}},
+
+    // ===== PRIMER NIVEL =====
+
+    {{96,560,brickWidth*5,32}},
+    {{1024,560,brickWidth*5,32}},
+
+    {{480,520,brickWidth*4,32}},
+    {{672,520,brickWidth*4,32}},
+
+    // ===== SEGUNDO NIVEL =====
+
+    {{224,430,brickWidth*5,32}},
+    {{864,430,brickWidth*5,32}},
+
+    {{512,390,brickWidth*8,32}},
+
+    // ===== COBERTURA CENTRAL =====
+
+    {{608,422,brickWidth*2,96}},
+
+    // ===== TERCER NIVEL =====
+
+    {{96,300,brickWidth*4,32}},
+    {{1056,300,brickWidth*4,32}},
+
+    {{384,280,brickWidth*4,32}},
+    {{768,280,brickWidth*4,32}},
+
+    // ===== COBERTURAS ALTAS =====
+
+    {{320,312,brickWidth*2,64}},
+    {{896,312,brickWidth*2,64}},
+
+    // ===== CUARTO NIVEL =====
+
+    {{256,170,brickWidth*4,32}},
+    {{896,170,brickWidth*4,32}},
+
+    {{544,140,brickWidth*6,32}},
+
+    // ===== COBERTURA SUPERIOR =====
+
+    {{608,172,brickWidth*2,64}},
+
+    // ===== PLATAFORMAS EXTREMAS =====
+
+    {{32,200,brickWidth*2,32}},
+    {{SCREEN_W-96,200,brickWidth*2,32}}
 };
 
 //Obtengo la cantidad de estructuras
 int structuresLenght = sizeof(structures)/sizeof(structures[0]);
 
 void UpdatePlayer(Player *p, float dt);
+
 int main(void)
 {
     
     InitWindow(SCREEN_W, SCREEN_H, "Magic medley");
 
     //Preparando la textura del bkg
-    Texture2D bkg=LoadTexture("resources/Sprites/bkg.png");
+    Texture2D bkg=LoadTexture("resources/Sprites/colored_desert.png");
     Rectangle bgkSource={0,0,bkg.width,bkg.height};
     Rectangle bkgDest={0,0,SCREEN_W,SCREEN_H};
 
@@ -79,8 +141,8 @@ int main(void)
     //Configuro jugadores
         Player p1={
             .helth=50,
-            .position=(Vector2){400,280},
-            .size={40,50},
+            .position=(Vector2){128, 500},
+            .size={32,48},
             .color=RED,
             .coyoteTimer=0,
             .keyLeft=KEY_A,
@@ -89,14 +151,16 @@ int main(void)
             .keyChange=KEY_E,
             .keyPick=KEY_R,
             .keyAttack=KEY_F,
-            .lastTapTime=0.0f,
+            .lastLeftTapTime=0.0f,
+            .lastRightTapTime=0.0f,
             .lastDashTime=0.0f,
-            .jumps=2
+            .jumps=2,
+            .direction=1
         };
         Player p2={
             .helth=50,
-            .position=(Vector2){600,280},
-            .size={40,50},
+            .position=(Vector2){1200, 500},
+            .size={32,48},
             .color=BLUE,
             .coyoteTimer=0,
             .keyLeft=KEY_LEFT,
@@ -105,10 +169,41 @@ int main(void)
             .keyChange=KEY_L,
             .keyPick=KEY_O,
             .keyAttack=KEY_P,
-            .lastTapTime=0.0f,
+            .lastLeftTapTime=0.0f,
+            .lastRightTapTime=0.0f,
             .lastDashTime=0.0f,
-            .jumps=2
+            .jumps=2,
+            .direction=1
         };
+    
+         //Animaicones jugadores
+    Animation p1Anim={
+        .first=0,
+        .current=0,
+        .last=2,
+        .speed=0.1f,
+        .durationLeft=0.1f,
+        .spriteSheet=LoadTexture("resources/Sprites/p1.png"),
+        .spriteWidth=17
+    };
+    Animation p2IdleAnim={
+        .first=0,
+        .current=0,
+        .last=3,
+        .speed=0.1f,
+        .durationLeft=0.1f,
+        .spriteSheet=LoadTexture("resources/Sprites/p2.png"),
+        .spriteWidth=16
+    };
+    Animation p2RunAnim={
+        .first=2,
+        .current=2,
+        .last=3,
+        .speed=0.1f,
+        .durationLeft=0.1f,
+        .spriteSheet=LoadTexture("resources/Sprites/p2.png"),
+        .spriteWidth=16
+    };
 
     while (!WindowShouldClose())
     {
@@ -116,7 +211,9 @@ int main(void)
         UpdatePlayer(&p1,dt);
         UpdatePlayer(&p2,dt);
 
-
+        AnimationUpdate(&p1Anim);
+        AnimationUpdate(&p2IdleAnim);
+        AnimationUpdate(&p2RunAnim);
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
@@ -138,14 +235,18 @@ int main(void)
             }
 
             //Dibujando jugadores
-            DrawRectangle(p1.position.x,p1.position.y,p1.size.x,p1.size.y,p1.color);
-            DrawRectangle(p2.position.x,p2.position.y,p2.size.x,p2.size.y,p2.color);
+            // DrawRectangle(p1.position.x,p1.position.y,p1.size.x,p1.size.y,p1.color);
+            // DrawRectangle(p2.position.x,p2.position.y,p2.size.x,p2.size.y,p2.color);
 
-            
-            // DrawText(TextFormat("X %.0f Y %.0f", p1.position.x, p1.position.y),10, 10, 20, BLACK);
+            DrawAnimation(&p1Anim,3,p1.size,p1.position,p1Anim.spriteWidth,-p1.direction);
+            if(p2.velocity.x!=0) DrawAnimation(&p2RunAnim,4,p2.size,p2.position,p2RunAnim.spriteWidth,p2.direction);
+            else DrawAnimation(&p2IdleAnim,2,p2.size,p2.position,p2IdleAnim.spriteWidth,p2.direction);
         EndDrawing();
     }
 
+    //No es necesario descargar las texturas, pero si tengo varios niveles, estas seguiran ocupando memoria ram
+    UnloadTexture(bkg);
+    UnloadTexture(brick);
     CloseWindow();
     return 0;
 }
@@ -159,8 +260,14 @@ void UpdatePlayer(Player *p,float dt){
     bool movingRight = IsKeyDown(p->keyRight);
 
     float targetVel=0; //esta variable queda en 0 cada frame
-    if(movingLeft) targetVel-=MOV_SPD;
-    if(movingRight) targetVel+=MOV_SPD;
+    if(movingLeft){
+        targetVel-=MOV_SPD;
+        p->direction=-1;
+    } 
+    if(movingRight){
+        targetVel+=MOV_SPD;
+        p->direction=1;
+    } 
 
     float accel = (targetVel!=0) ? ACCELERATION : DECELERATION; //Velocidad que va a aumentar o disminuir 
 
@@ -243,29 +350,30 @@ void UpdatePlayer(Player *p,float dt){
             pRect.x=p->position.x;
         }
     }
-    float now=0.0f;
-    const float doubleTapTime=0.25f;
+    
     //=================Dash
+    float now=0.0f;
+    const float doubleTapTime=0.2f;
     if(IsKeyPressed(p->keyLeft)){
         now=GetTime();
 
-        if(now-p->lastDashTime>DASH_COLDAWN &&  now-p->lastTapTime<doubleTapTime){
+        if(now-p->lastDashTime>DASH_COLDAWN &&  now-p->lastLeftTapTime<doubleTapTime){
             p->firstDashPos=p->position.x;
             p->velocity.x+=(p->velocity.x<0) ?-2000 :2000;
             p->lastDashTime=now;
             p->isDashing=true;
         }
-        p->lastTapTime=now;
+        p->lastLeftTapTime=now;
     }else if(IsKeyPressed(p->keyRight)){
         now=GetTime();
 
-        if(now-p->lastDashTime>DASH_COLDAWN &&  now-p->lastTapTime<doubleTapTime){
+        if(now-p->lastDashTime>DASH_COLDAWN &&  now-p->lastRightTapTime<doubleTapTime){
             p->firstDashPos=p->position.x;
             p->velocity.x+=(p->velocity.x<0) ?-2000 :2000;
             p->lastDashTime=now;
             p->isDashing=true;
         }
-        p->lastTapTime=now;
+        p->lastRightTapTime=now;
     }
 
     //Para parar el dash
@@ -274,7 +382,6 @@ void UpdatePlayer(Player *p,float dt){
             p->velocity.x=0;
             p->isDashing=false;
         }
-        
     }
     
 }
