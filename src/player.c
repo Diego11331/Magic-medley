@@ -5,37 +5,11 @@
 #include "animations.h"
 
 
-typedef struct Player{
-    //Propiedades
-    int helth;
-    int direction;
-    Vector2 position;
-    Vector2 velocity;
-    Vector2 size;
-    Color color;
-    //Manejar saltos
-    float coyoteTimer;
-    float jumpBufferTimer;
-    int jumps;
-    bool onGround;
-    bool jumpPressed;
-    //Controles
-    int keyLeft,keyRight,keyJump,keyPick,keyChange,keyAttack;
-    //Manejar dash
-    float lastLeftTapTime;
-    float lastRightTapTime;
-    float lastDashTime;
-    bool isDashing;
-    float firstDashPos;
-    //Inventario
-    bool hasWand;
-    int wandIdentifier[MAX_WANDS];
-    //Efecto de dano
-    float damageTimer;
-    float damageTime;
-}Player;
+
 
 void UpdatePlayer(Player *p,float dt,Structure structures[],int structuresLenght){
+    float MOV_SPD=(!p->isFreezedTimer>0)?280.0f :100.0f;
+    
     //Actualizando timers
     if(!p->onGround) p->coyoteTimer-=dt;
     if(p->jumpBufferTimer>0) p->jumpBufferTimer-=dt;
@@ -169,7 +143,23 @@ void UpdatePlayer(Player *p,float dt,Structure structures[],int structuresLenght
             p->isDashing=false;
         }
     }
+
+    //Re invertir controles
+    if(p->invertControlsTimer>0){
+        p->invertControlsTimer-=GetFrameTime();
+    }else if(p->invertControlsTimer<0){
+        KeyboardKey aux=p->keyLeft;
+        p->keyLeft=p->keyRight;
+        p->keyRight=aux;
+        p->invertControlsTimer=0;
+    }
     
+    //Descongelar jugador
+    if(p->isFreezedTimer>0){
+        p->isFreezedTimer-=GetFrameTime();
+    }else if(p->isFreezedTimer<0){
+        p->isFreezedTimer=0;
+    }
 }
 void InitPlayers(Player players[2]){
     //Configuro jugadores
@@ -190,7 +180,13 @@ void InitPlayers(Player players[2]){
         .lastDashTime=0.0f,
         .jumps=2,
         .direction=1,
-        .wandIdentifier = {-1, -1}
+        .wandIdentifier = {-1, -1},
+        .damageTime=0.1f,
+        .damageTimer=0.0f,
+        .invertControlsTimer=0.0f,
+        .invertControlsTimerTime=3.0f,
+        .isFreezedTimer=0.0f,
+        .isFreezedTimerTime=3.0f
     };
     players[1]=(Player){
         .helth=50,
@@ -209,9 +205,16 @@ void InitPlayers(Player players[2]){
         .lastDashTime=0.0f,
         .jumps=2,
         .direction=1,
-        .wandIdentifier = {-1, -1}
+        .wandIdentifier = {-1, -1},
+        .damageTime=0.1f,
+        .damageTimer=0.0f,
+        .invertControlsTimer=0.0f,
+        .invertControlsTimerTime=3.0f,
+        .isFreezedTimer=0.0f,
+        .isFreezedTimerTime=3.0f
     };
 }
-void DrawPlayer(){
-
+void DrawPlayerAnim(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int spriteHeight,int pDirection,float damageTimer){
+    Color color =(damageTimer>0) ?RED :WHITE;
+    DrawAnimation(self,numFramesPerRow,pSize,pPos,spriteWidth,spriteHeight,pDirection,color);
 }

@@ -5,6 +5,8 @@
 #define MAX_PROJECTILES 100
 #define MAX_WORLD_WANDS 100
 #define MAX_SPAWNS 8
+#define SCREEN_W 1280
+#define SCREEN_H 720
 
 typedef struct Wands{
     float damage;
@@ -12,33 +14,39 @@ typedef struct Wands{
     Vector2 spawnPos;
     Vector2 position;
     Vector2 size;
-    float projectileSize;
+    Vector2 projectileSize;
     int rarity;
 
     int uses;
-
-    Texture2D sprite;
 
     bool isActive; //Para poder dibujar
     bool isEquiped;
     int wandIndentifier;
 
     Color color;
+
+    Texture2D proyectileSprite;
+    Animation proyectileAnimation;
+    int framesPerRow;
+
+    Texture2D wandSprite;
 }Wands;
 
 typedef struct Projectile{
     Vector2 position;
     float velocity;
     float damage;
+
     //Para que no se lastime a si mismo
     Player *owner;
 
-    float size;
+    Vector2 size;
     bool isActive;
 
-    Texture2D sprite;
+    Animation animation;
+    int framesPerRow;
+    int rarity;
 }Projectile;
-
 typedef struct WandSpawn{
     Vector2 position;
     int spawnRarity;
@@ -51,13 +59,29 @@ typedef struct WandSpawn{
     struct WandSpawn *right;
     struct WandSpawn *left;
 }WandSpawn;
+
+typedef struct WandTextures{
+    Texture2D fireWand;
+    Texture2D thunderWand;
+    Texture2D iceWand;
+    Texture2D waterWand;
+}WandTextures;
+
+typedef struct ProyectilesTextures{
+    Texture2D fireProyectile;
+    Texture2D thunderProyectile;
+    Texture2D iceProyectile;
+    Texture2D waterPryectile;
+}ProyectilesTextures;
+Animation *LoadProyectilesAnimations();
 void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 offsetP2,int flipPlayerOffset,Projectile projectiles[]);
 void DrawWand(Wands wands[],Player *p1,Player *p2);
-void UpdatePoryectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount);
-void DrawProjectiles(Projectile projectiles[]);
+void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount);
+void DrawProjectiles(Projectile projectiles[],Player *p1,Player *p2);
 WandSpawn *CreateSpawnNodes(Vector2 position,int rarity,float spawnTime);
 WandSpawn *InsertSpawnNode(WandSpawn *root,Vector2 position,int rarity,float spawnTime);
 WandSpawn *InitSpawnTree();
-Wands *CreateWand(Wands worldWands[],WandSpawn *spawn);
-void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[]);
+WandTextures LoadTexturesWands();
+Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextures textures);
+void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],Animation *proAnims,WandTextures textures);
 void UpdateWandPickUp(Player *p1,Player *p2,Wands worldWands[]);

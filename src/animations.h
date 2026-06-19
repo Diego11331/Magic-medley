@@ -11,8 +11,9 @@ typedef struct Animation{
     Texture2D spriteSheet;
 
     int spriteWidth;
+    int spriteHeight;
 }Animation;
 
 void AnimationUpdate(Animation *self);
-Rectangle AnimationFrame(Animation *self,int numFramesPerRow,int spriteWidth);
-void DrawAnimation(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int pDirection);
+Rectangle AnimationFrame(Animation *self,int numFramesPerRow,int spriteWidth,int spriteHeight);
+void DrawAnimation(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int spriteHeight,int pDirection,Color color);

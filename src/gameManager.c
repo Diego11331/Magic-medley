@@ -1,11 +1,19 @@
 #include "player.h"
+#include "stdio.h"
 #include "wands.h"
 #include "structures.h"
 
 #define SCREEN_W 1280
 #define SCREEN_H 720
 
-void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[]){
+void ResetTimerSapwns(WandSpawn *root){
+    if(root==NULL) return;
+    root->spawnTimer=root->spawnTime;
+
+    ResetTimerSapwns(root->left);
+    ResetTimerSapwns(root->right);
+}
+void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root){
     if((p1->helth<=0 || p2->helth<=0) || (p1->position.y>screenHeight+300 || p2->position.y>screenHeight+300)){
         p1->position=p1SpawnPos;
         p2->position=p2SpawnPos;
@@ -21,29 +29,43 @@ void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector
         for(int i=0;i<MAX_WORLD_WANDS;i++){
             wands[i]=(Wands){0};
         }
+
+        ResetTimerSapwns(root);
     }
 
 }
-void DrawPlayerInfo(Player *p1,Player *p2,Wands wands[]){
-    int padding=0;
+
+void DrawPlayerInfo(Player *p1,Player *p2,Wands wands[],Texture2D heartTex,Texture2D swordTex){
+    int paddingP1=swordTex.width;
+    int paddingP2=SCREEN_W-swordTex.width;
+    int usesBarWidth=5;
+    int usesBarHeight=64;
+
+    DrawTextureEx(swordTex,(Vector2){0,70},0,1,GRAY);
+    DrawTextureEx(swordTex,(Vector2){SCREEN_W-swordTex.width,70},0,1,GRAY);
+
     for(int i=0;i<MAX_WORLD_WANDS;i++){
         
         if(wands[i].isActive && wands[i].isEquiped){
             if(wands[i].wandIndentifier==p1->wandIdentifier[0] || wands[i].wandIndentifier==p1->wandIdentifier[1]){
-                DrawText(TextFormat("Uses: %i",wands[i].uses),10,50,50,RED);
                 for(int j=0;j<wands[i].uses;j++){
-                    // DrawRectangle(padding,2,5,50,RED);
-                    padding+=10;
+                    paddingP1+=10;
+                    DrawRectangle(paddingP1,70,usesBarWidth,usesBarHeight,GRAY);
                 }
-                
             }else if(wands[i].wandIndentifier==p2->wandIdentifier[0] || wands[i].wandIndentifier==p2->wandIdentifier[1]){
-                DrawText(TextFormat("Uses: %i",wands[i].uses),1000,50,50,BLUE);
+                for(int j=0;j<wands[i].uses;j++){
+                    paddingP2-=10;
+                    DrawRectangle(paddingP2,70,usesBarWidth,usesBarHeight,GRAY);
+                }
             }
         }
     }
-    int helthBarMultiplier=5;
-    DrawRectangle(0,10,p1->helth*helthBarMultiplier,50,RED);
-    DrawRectangle(SCREEN_W-p2->helth,10,p2->helth*helthBarMultiplier,50,BLUE);
-    // DrawText(TextFormat("Life: %i",p1->helth),10,10,50,RED);
-    // DrawText(TextFormat("Life: %i",p2->helth),1000,10,50,BLUE);
+    int helthBarMultiplier=4;
+    int helthBarP2=helthBarMultiplier*p2->helth;
+
+    DrawTextureEx(heartTex,(Vector2){0,0},0,1,RED);
+    DrawRectangle(heartTex.width,5,p1->helth*helthBarMultiplier,50,RED);
+
+    DrawTextureEx(heartTex,(Vector2){SCREEN_W-heartTex.width,0},0,1,RED);
+    DrawRectangle(SCREEN_W-helthBarP2-heartTex.width,5,helthBarP2,50,RED);
 }

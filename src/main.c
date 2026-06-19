@@ -114,7 +114,14 @@ int main(void)
     InitPlayers(players);
     Player p1=players[0];
     Player p2=players[1];
+
+    //Sprites de la ui del player
+    Texture2D heart=LoadTexture("resources/Sprites/heart.png");
+    Texture2D sword=LoadTexture("resources/Sprites/sword.png");
     
+    //Sprites de las varitas
+    WandTextures wandsTextures=LoadTexturesWands();
+
     //Animaicones jugadores
     Animation p1Anim={
         .first=0,
@@ -123,7 +130,8 @@ int main(void)
         .speed=0.1f,
         .durationLeft=0.1f,
         .spriteSheet=LoadTexture("resources/Sprites/p1.png"),
-        .spriteWidth=17
+        .spriteWidth=17,
+        .spriteHeight=17
     };
     Animation p2IdleAnim={
         .first=0,
@@ -132,7 +140,8 @@ int main(void)
         .speed=0.1f,
         .durationLeft=0.1f,
         .spriteSheet=LoadTexture("resources/Sprites/p2.png"),
-        .spriteWidth=16
+        .spriteWidth=16,
+        .spriteHeight=16
     };
     Animation p2RunAnim={
         .first=2,
@@ -141,9 +150,14 @@ int main(void)
         .speed=0.1f,
         .durationLeft=0.1f,
         .spriteSheet=LoadTexture("resources/Sprites/p2.png"),
-        .spriteWidth=16
+        .spriteWidth=16,
+        .spriteHeight=16
     };
+    
+    //Animaciones proyectiles
 
+    Animation *proyectilesAnimations=LoadProyectilesAnimations();
+    
 
     Projectile projectiles[MAX_PROJECTILES]={0};
 
@@ -160,16 +174,18 @@ int main(void)
         AnimationUpdate(&p2IdleAnim);
         AnimationUpdate(&p2RunAnim);
 
-        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands);
+        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot);
 
         //Actualizo nubes
         UpdateClouds(clouds);
 
+        UpdateProjectile(projectiles,&p1,&p2,structures,structuresLenght);
+
         UpdateWand(worldWands,&p1,&p2,(Vector2){25,-15},(Vector2){18,-13},4,projectiles);
 
-        UpdatePoryectile(projectiles,&p1,&p2,structures,structuresLenght);
         
-        UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands);
+        
+        UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands,proyectilesAnimations,wandsTextures);
         UpdateWandPickUp(&p1,&p2,worldWands);
         BeginDrawing();
             ClearBackground(RAYWHITE);
@@ -177,18 +193,21 @@ int main(void)
             //Dibujando bkg y estructuras
             DrawStructures(structsTextures.brick,structsTextures.bkg,structsTextures.cloud,structuresLenght,structures,clouds);
 
+            
+            //UI
+            DrawPlayerInfo(&p1,&p2,worldWands,heart,sword);
+
             //Dibujando jugadores
-            DrawAnimation(&p1Anim,3,p1.size,p1.position,p1Anim.spriteWidth,-p1.direction);
-            if(p2.velocity.x!=0) DrawAnimation(&p2RunAnim,4,p2.size,p2.position,p2RunAnim.spriteWidth,p2.direction);
-            else DrawAnimation(&p2IdleAnim,2,p2.size,p2.position,p2IdleAnim.spriteWidth,p2.direction);
+            DrawPlayerAnim(&p1Anim,3,p1.size,p1.position,p1Anim.spriteWidth,p1Anim.spriteHeight,-p1.direction,p1.damageTimer);
+            if(p2.velocity.x!=0) DrawPlayerAnim(&p2RunAnim,4,p2.size,p2.position,p2RunAnim.spriteWidth,p2RunAnim.spriteHeight,p2.direction,p2.damageTimer);
+            else DrawPlayerAnim(&p2IdleAnim,2,p2.size,p2.position,p2IdleAnim.spriteWidth,p2IdleAnim.spriteHeight,p2.direction,p2.damageTimer);
 
             //Dibujando varitas
             DrawWand(worldWands,&p1,&p2);
 
-            DrawProjectiles(projectiles);
+            // DrawProjectiles(projectiles,&p1,&p2);
+            DrawProjectiles(projectiles,&p1,&p2);
 
-            //UI
-            DrawPlayerInfo(&p1,&p2,worldWands);
         EndDrawing();
     }
 

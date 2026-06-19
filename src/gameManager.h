@@ -2,6 +2,6 @@
 #include "wands.h"
 
 
-
-void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[]);
-void DrawPlayerInfo(Player *p1,Player *p2,Wands wands[]);
+void ResetTimerSapwns(WandSpawn *root);
+void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root);
+void DrawPlayerInfo(Player *p1,Player *p2,Wands wands[],Texture2D heartTex,Texture2D swordTex);

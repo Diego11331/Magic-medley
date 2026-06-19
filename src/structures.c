@@ -7,27 +7,9 @@
 #define SCREEN_H 720
 #define MAX_CLOUDS 8
 
-//Para luego retornar las texturas
-typedef struct Textures {
-    Texture2D bkg;
-    Texture2D brick;
-    Texture2D cloud;
-} Textures;
-//Estructuras de los obstaculos
-typedef struct Sructure{
-    Rectangle rect;
-}Structure;
-typedef struct Cloud{
-    Vector2 position;
-    float speed;
-    float scale;
-    float alpha;
-    Texture2D texture;
-}Cloud;
-
 Textures LoadTexturesStructures(){
     Textures textures={
-        .brick=LoadTexture("resources/Sprites/brick.png"), //Preparando la textura de las plataformas
+        .brick=LoadTexture("resources/Sprites/block.png"), //Preparando la textura de las plataformas
         .bkg=LoadTexture("resources/Sprites/colored_castle.png"), //Preparando la textura del bk
         .cloud=LoadTexture("resources/Sprites/cloud1.png") //Preparando la textura del cloud
     };
