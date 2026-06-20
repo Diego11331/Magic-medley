@@ -135,7 +135,7 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
            case 1: // exotico/legendario (rayo)
             worldWands[i].damage=40;
             worldWands[i].projectileSize=(Vector2){70,70};
-            worldWands[i].uses=10;
+            worldWands[i].uses=3;
             worldWands[i].velocity=3000.0f;
 
             worldWands[i].color=YELLOW;
@@ -170,7 +170,7 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
             break;
             case 4: // comun (agua)
             worldWands[i].damage=10;
-            worldWands[i].projectileSize=(Vector2){45,45};
+            worldWands[i].projectileSize=(Vector2){80,80};
             worldWands[i].uses=12;
             worldWands[i].velocity=500.0f;
 
@@ -353,22 +353,27 @@ void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 off
 }
 
 //=========================DIBUJADO
-void DrawWand(Wands wands[],Player *p1,Player *p2){
+void DrawWand(Wands wands[],Player *p1,Player *p2,WandTextures textures){
     for(int i=0;i<MAX_WORLD_WANDS;i++){
         Player *owner=NULL;
         float wandFloatEffect=sinf(GetTime()*3.0f+i*1.2f)*4.0f;
+        
         if(wands[i].wandIndentifier==p1->wandIdentifier[0]) owner=p1;
         else if(wands[i].wandIndentifier==p2->wandIdentifier[0]) owner=p2;
 
+        Vector2 origin = { wands[i].size.x / 2, wands[i].size.y / 2 };
+
         if(wands[i].isActive && wands[i].isEquiped){
-            Rectangle rect=(Rectangle){wands[i].position.x,wands[i].position.y,wands[i].size.x,wands[i].size.y};
+            Rectangle rect=(Rectangle){wands[i].position.x+origin.x,wands[i].position.y+origin.y,wands[i].size.x,wands[i].size.y};
             float rotation=45*owner->direction;
             DrawRectanglePro(rect,(Vector2){0,0},rotation,wands[i].color);
-            // DrawTexturePro(wands[i].wandSprite,(Rectangle){},rect,(Vector2){0,0},0,WHITE);
+            DrawTexturePro(wands[i].wandSprite,(Rectangle){0,0,wands[i].wandSprite.width,wands[i].wandSprite.height},rect,(Vector2){0,0},rotation,WHITE);
         }else if(wands[i].isActive && !wands[i].isEquiped){
             Rectangle rect=(Rectangle){wands[i].position.x,wands[i].position.y+wandFloatEffect,wands[i].size.x,wands[i].size.y};
             float rotation=45;
-            DrawRectanglePro(rect,(Vector2){0,0},rotation,wands[i].color);
+            // DrawRectanglePro(rect,(Vector2){0,0},rotation,wands[i].color);
+            DrawTexturePro(wands[i].wandSprite,(Rectangle){0,0,wands[i].wandSprite.width,wands[i].wandSprite.height},rect,(Vector2){0,0},rotation,WHITE);
+                                                                                           
         }
     }
 }

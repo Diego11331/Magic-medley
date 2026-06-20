@@ -6,10 +6,14 @@
 #include "gameManager.h"
 #include "structures.h"
 #include "wands.h"
+#include "controlsMenu.h"
+#include "mainMenu.h"
+#include "scoreMenu.h"
 
 #define SCREEN_W 1280
 #define SCREEN_H 720
 #define BRICK_WIDTH 32
+#define BUTTON_COUNT 4
 
 Structure structures[] = {
     // ===== SUELO =====
@@ -101,7 +105,9 @@ int structuresLenght = sizeof(structures)/sizeof(structures[0]);
 
 int main(void)
 {
-    // SetConfigFlags(FLAG_FULLSCREEN_MODE);
+    //Estado inicial de la maquina
+    GameState currentState=MENU;
+
     InitWindow(SCREEN_W, SCREEN_H, "Magic medley");
 
     //Cargo texturas de las estructuras
@@ -165,34 +171,81 @@ int main(void)
     Wands worldWands[MAX_WORLD_WANDS]={0};
     WandSpawn *spawnRoot=InitSpawnTree();
 
+
+    //======================Datos para el dibujado del menu
+    Color bgColor=(Color){ 22, 18, 38, 255 };
+    Color titleColor=(Color){ 235, 225, 255, 255 };
+    Color subtitleColor=(Color){ 150, 135, 190, 255 };
+ 
+    float btnWidth=300.0f;
+    float btnHeight=58.0f;
+    float gap=18.0f;
+    float startY=400.0f;
+    float centerX=SCREEN_W / 2.0f - btnWidth / 2.0f;
+ 
+    MenuButton buttons[BUTTON_COUNT]={
+        {(Rectangle){centerX,startY,btnWidth,btnHeight },"PLAY",BUTTON_PLAY,false,false},
+        {(Rectangle){centerX,startY+(btnHeight+gap)*1,btnWidth, btnHeight },"CONTROLS",BUTTON_CONTROLS,false,false },
+        {(Rectangle){centerX,startY+(btnHeight+gap)*2,btnWidth, btnHeight },"GLOBAL SCORE", BUTTON_SCORE,false,false },
+        {(Rectangle){centerX,startY+(btnHeight+gap)*3,btnWidth, btnHeight },"EXIT",BUTTON_EXIT,false,false}
+    };
+
+    //HAGO ARREGLO TEMPORAL DE SCORES
+    const int scores[]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+
     while (!WindowShouldClose())
     {
-        UpdatePlayer(&p1,GetFrameTime(),structures,structuresLenght);
-        UpdatePlayer(&p2,GetFrameTime(),structures,structuresLenght);
+        //Actualizacion de variables condicional
+        switch (currentState){
+        case GAME:
+            UpdatePlayer(&p1,GetFrameTime(),structures,structuresLenght);
+            UpdatePlayer(&p2,GetFrameTime(),structures,structuresLenght);
 
-        AnimationUpdate(&p1Anim);
-        AnimationUpdate(&p2IdleAnim);
-        AnimationUpdate(&p2RunAnim);
+            AnimationUpdate(&p1Anim);
+            AnimationUpdate(&p2IdleAnim);
+            AnimationUpdate(&p2RunAnim);
 
-        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot);
+            //Actualizo nubes
+            UpdateClouds(clouds);
 
-        //Actualizo nubes
-        UpdateClouds(clouds);
+            UpdateProjectile(projectiles,&p1,&p2,structures,structuresLenght);
 
-        UpdateProjectile(projectiles,&p1,&p2,structures,structuresLenght);
+            UpdateWand(worldWands,&p1,&p2,(Vector2){25,-15},(Vector2){18,-13},4,projectiles);
 
-        UpdateWand(worldWands,&p1,&p2,(Vector2){25,-15},(Vector2){18,-13},4,projectiles);
+            
+            
+            UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands,proyectilesAnimations,wandsTextures);
+            UpdateWandPickUp(&p1,&p2,worldWands);
+            break;
+        default:
+            break;
+        }
+        //Tiene que estar afuera porque sino no recibe currentState acutalizado
+        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState);
 
-        
-        
-        UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands,proyectilesAnimations,wandsTextures);
-        UpdateWandPickUp(&p1,&p2,worldWands);
         BeginDrawing();
-            ClearBackground(RAYWHITE);
-
+        ClearBackground(bgColor);
+        
+        //Dibujado condicional
+        switch (currentState){
+        case MENU:
+            for(int i = 0; i < BUTTON_COUNT; i++) {
+                bool isPrimary = (buttons[i].id == BUTTON_PLAY);
+                bool clicked = DrawMenuButton(&buttons[i], isPrimary,titleColor,subtitleColor);
+ 
+                if(clicked){
+                    switch(buttons[i].id) {
+                        case BUTTON_PLAY: currentState=GAME; break;
+                        case BUTTON_CONTROLS: currentState=CONTROLS; break;
+                        case BUTTON_SCORE: currentState=SCORE; break;
+                        case BUTTON_EXIT: currentState=EXIT; break;
+                    }
+                }
+            }
+            break;
+        case GAME:
             //Dibujando bkg y estructuras
             DrawStructures(structsTextures.brick,structsTextures.bkg,structsTextures.cloud,structuresLenght,structures,clouds);
-
             
             //UI
             DrawPlayerInfo(&p1,&p2,worldWands,heart,sword);
@@ -203,10 +256,27 @@ int main(void)
             else DrawPlayerAnim(&p2IdleAnim,2,p2.size,p2.position,p2IdleAnim.spriteWidth,p2IdleAnim.spriteHeight,p2.direction,p2.damageTimer);
 
             //Dibujando varitas
-            DrawWand(worldWands,&p1,&p2);
+            DrawWand(worldWands,&p1,&p2,wandsTextures);
 
             // DrawProjectiles(projectiles,&p1,&p2);
             DrawProjectiles(projectiles,&p1,&p2);
+
+            //Para volver al menu
+            if(IsKeyPressed(KEY_BACKSPACE)) currentState=MENU;
+            break;
+        case CONTROLS:
+            if(DrawControlsScreen(&p1,&p2)) currentState=MENU;
+        break;
+        case SCORE:
+        if(DrawScoresScreen(scores,sizeof(scores)/sizeof(int),&p1,&p2)) currentState=MENU;
+        break;
+        case EXIT: 
+            CloseWindow();
+        break;
+        default:
+            break;
+        }
+            
 
         EndDrawing();
     }

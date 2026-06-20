@@ -75,7 +75,7 @@ typedef struct ProyectilesTextures{
 }ProyectilesTextures;
 Animation *LoadProyectilesAnimations();
 void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 offsetP2,int flipPlayerOffset,Projectile projectiles[]);
-void DrawWand(Wands wands[],Player *p1,Player *p2);
+void DrawWand(Wands wands[],Player *p1,Player *p2,WandTextures textures);
 void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount);
 void DrawProjectiles(Projectile projectiles[],Player *p1,Player *p2);
 WandSpawn *CreateSpawnNodes(Vector2 position,int rarity,float spawnTime);

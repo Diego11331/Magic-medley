@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "wands.h"
 #include "structures.h"
+#include "gameManager.h"
 
 #define SCREEN_W 1280
 #define SCREEN_H 720
@@ -13,8 +14,11 @@ void ResetTimerSapwns(WandSpawn *root){
     ResetTimerSapwns(root->left);
     ResetTimerSapwns(root->right);
 }
-void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root){
-    if((p1->helth<=0 || p2->helth<=0) || (p1->position.y>screenHeight+300 || p2->position.y>screenHeight+300)){
+void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root,GameState currentState){
+    bool playerDie=(p1->helth<=0 || p2->helth<=0);
+    bool playerGoOut=(p1->position.y>screenHeight+300 || p2->position.y>screenHeight+300);
+    bool playerGoToMenu=currentState!=GAME;
+    if(playerDie || playerGoOut || playerGoToMenu){
         p1->position=p1SpawnPos;
         p2->position=p2SpawnPos;
         p1->helth=initialHelth;
@@ -48,7 +52,7 @@ void DrawPlayerInfo(Player *p1,Player *p2,Wands wands[],Texture2D heartTex,Textu
         
         if(wands[i].isActive && wands[i].isEquiped){
             if(wands[i].wandIndentifier==p1->wandIdentifier[0] || wands[i].wandIndentifier==p1->wandIdentifier[1]){
-                for(int j=0;j<wands[i].uses;j++){
+                    for(int j=0;j<wands[i].uses;j++){
                     paddingP1+=10;
                     DrawRectangle(paddingP1,70,usesBarWidth,usesBarHeight,GRAY);
                 }
