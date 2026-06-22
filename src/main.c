@@ -14,6 +14,7 @@
 #define SCREEN_H 720
 #define BRICK_WIDTH 32
 #define BUTTON_COUNT 4
+#define MAX_SCORE 1000
 
 Structure structures[] = {
     // ===== SUELO =====
@@ -110,6 +111,8 @@ int main(void)
 
     InitWindow(SCREEN_W, SCREEN_H, "Magic medley");
 
+    InitAudioDevice(); //Raylib llama a una libreria para reproducir sonidos
+
     //Cargo texturas de las estructuras
     Cloud clouds[MAX_CLOUDS]={0};
     Textures structsTextures=LoadTexturesStructures();
@@ -190,8 +193,15 @@ int main(void)
         {(Rectangle){centerX,startY+(btnHeight+gap)*3,btnWidth, btnHeight },"EXIT",BUTTON_EXIT,false,false}
     };
 
-    //HAGO ARREGLO TEMPORAL DE SCORES
-    const int scores[]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14,11,12,13,14,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+    //Arreglo de scores
+    int scores[MAX_SCORE]={0};
+
+    //Para el global score
+    int p1Score=0,p2Score=0;
+
+    //Cargo los sonidos
+    Sounds sounds=LoadSounds();
+    Sound damageSound=LoadSound("resources/Sounds/hurtSound.mp3");
 
     while (!WindowShouldClose())
     {
@@ -208,20 +218,20 @@ int main(void)
             //Actualizo nubes
             UpdateClouds(clouds);
 
-            UpdateProjectile(projectiles,&p1,&p2,structures,structuresLenght);
+            UpdateProjectile(projectiles,&p1,&p2,structures,structuresLenght,damageSound);
 
             UpdateWand(worldWands,&p1,&p2,(Vector2){25,-15},(Vector2){18,-13},4,projectiles);
 
             
             
-            UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands,proyectilesAnimations,wandsTextures);
+            UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands,proyectilesAnimations,wandsTextures,sounds);
             UpdateWandPickUp(&p1,&p2,worldWands);
             break;
         default:
             break;
         }
         //Tiene que estar afuera porque sino no recibe currentState acutalizado
-        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState);
+        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState,&p1Score,&p2Score);
 
         BeginDrawing();
         ClearBackground(bgColor);
@@ -268,7 +278,8 @@ int main(void)
             if(DrawControlsScreen(&p1,&p2)) currentState=MENU;
         break;
         case SCORE:
-        if(DrawScoresScreen(scores,sizeof(scores)/sizeof(int),&p1,&p2)) currentState=MENU;
+            int scoreCount=ReadFileScore(scores,MAX_SCORE);
+            if(DrawScoresScreen(scores,scoreCount,&p1,&p2)) currentState=MENU;
         break;
         case EXIT: 
             CloseWindow();
@@ -284,6 +295,8 @@ int main(void)
     //No es necesario descargar las texturas, pero si tengo varios niveles, estas seguiran ocupando memoria ram
     // UnloadTexture(bkg);
     // UnloadTexture(brick);
+    
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "player.h"
 #include "stdio.h"
+#include <stdlib.h>
 #include "wands.h"
 #include "structures.h"
 #include "gameManager.h"
@@ -7,6 +8,16 @@
 #define SCREEN_W 1280
 #define SCREEN_H 720
 
+bool WriteFileScore(int p1Score,int p2Score){
+	FILE *file = fopen("scores.csv","a");
+	
+	if(file==NULL) return false;
+	
+	fprintf(file,"%i,%i\n",p1Score,p2Score);
+	
+	fclose(file);
+	return true;
+}
 void ResetTimerSapwns(WandSpawn *root){
     if(root==NULL) return;
     root->spawnTimer=root->spawnTime;
@@ -14,11 +25,19 @@ void ResetTimerSapwns(WandSpawn *root){
     ResetTimerSapwns(root->left);
     ResetTimerSapwns(root->right);
 }
-void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root,GameState currentState){
-    bool playerDie=(p1->helth<=0 || p2->helth<=0);
-    bool playerGoOut=(p1->position.y>screenHeight+300 || p2->position.y>screenHeight+300);
-    bool playerGoToMenu=currentState!=GAME;
-    if(playerDie || playerGoOut || playerGoToMenu){
+void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root,GameState currentState,int *p1Score,int *p2Score){
+    bool p1Die=(p1->helth<=0);
+    bool p2Die=(p2->helth<=0);
+    bool playerGoToMenu=currentState==GAME && IsKeyDown(KEY_BACKSPACE);
+
+    if(p1->position.y>screenHeight+300) p1Die=true;
+    if(p2->position.y>screenHeight+300) p2Die=true;
+
+    if(p1Die) (*p2Score)++;
+    if(p2Die) (*p1Score)++;
+
+    if(p1Die || p2Die || playerGoToMenu){
+
         p1->position=p1SpawnPos;
         p2->position=p2SpawnPos;
         p1->helth=initialHelth;
@@ -35,6 +54,13 @@ void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector
         }
 
         ResetTimerSapwns(root);
+
+        printf("%i",*p1Score);
+        if(playerGoToMenu){
+            WriteFileScore(*p1Score,*p2Score);
+            *p1Score=0;
+            *p2Score=0;
+        }
     }
 
 }

@@ -1,8 +1,33 @@
 #include "raylib.h"
+#include "scoreMenu.h"
+#include <stdio.h>
 #include "player.h"
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#define MAX_CONTENT 100
 
 #define SCORES_MAX_VISIBLE_ROWS 6
+
+int ReadFileScore(int *scores, int maxScores){
+    FILE *file = fopen("scores.csv", "r");
+    if (file == NULL) return 0;
+
+    char content[MAX_CONTENT];
+    int idx = 0;
+
+    while (fgets(content, MAX_CONTENT, file) && idx < maxScores) {
+        char *token = strtok(content, ",\n");
+        while (token != NULL && idx < maxScores) {
+            scores[idx] = atoi(token);
+            idx++;
+            token = strtok(NULL, ",\n");
+        }
+    }
+
+    fclose(file);
+    return idx;
+}
 
 static bool DrawBackButton(Rectangle rect)
 {
@@ -51,20 +76,11 @@ static float ClampF(float value, float min, float max)
     return value;
 }
 
-/*
- * scores: arreglo plano alternado [p1_s1, p2_s1, p1_s2, p2_s2, ...]
- * scoreCount: cantidad total de elementos en scores (sessions = scoreCount/2)
- * El cuerpo de la tabla tiene altura fija (SCORES_MAX_VISIBLE_ROWS filas) y
- * scrollea con la rueda del mouse cuando hay mas sesiones de las que entran.
- * Header y fila de totales quedan siempre fijos.
- * Devuelve true en el frame en que se hizo click en "Back".
- */
 bool DrawScoresScreen(const int *scores, int scoreCount, Player *p1, Player *p2)
 {
     static float scrollOffset = 0.0f;
 
     ClearBackground((Color){ 22, 18, 38, 255 });
-    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 
     const char *title = "SCORES";
     int titleFontSize = 48;

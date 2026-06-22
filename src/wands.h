@@ -13,8 +13,10 @@ typedef struct Wands{
     float velocity;
     Vector2 spawnPos;
     Vector2 position;
-    Vector2 size;
+    float size;
+    Vector2 wandHitboxSize;
     Vector2 projectileSize;
+    float projectileHitboxSize;
     int rarity;
 
     int uses;
@@ -30,6 +32,8 @@ typedef struct Wands{
     int framesPerRow;
 
     Texture2D wandSprite;
+    
+    Sound wandSound;
 }Wands;
 
 typedef struct Projectile{
@@ -41,6 +45,7 @@ typedef struct Projectile{
     Player *owner;
 
     Vector2 size;
+    float hitboxSize;
     bool isActive;
 
     Animation animation;
@@ -66,6 +71,12 @@ typedef struct WandTextures{
     Texture2D iceWand;
     Texture2D waterWand;
 }WandTextures;
+typedef struct Sounds{
+    Sound waterSound;
+    Sound fireSound;
+    Sound iceSound;
+    Sound electricitySound;
+}Sounds;
 
 typedef struct ProyectilesTextures{
     Texture2D fireProyectile;
@@ -76,12 +87,13 @@ typedef struct ProyectilesTextures{
 Animation *LoadProyectilesAnimations();
 void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 offsetP2,int flipPlayerOffset,Projectile projectiles[]);
 void DrawWand(Wands wands[],Player *p1,Player *p2,WandTextures textures);
-void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount);
+void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount,Sound damageSound);
 void DrawProjectiles(Projectile projectiles[],Player *p1,Player *p2);
 WandSpawn *CreateSpawnNodes(Vector2 position,int rarity,float spawnTime);
 WandSpawn *InsertSpawnNode(WandSpawn *root,Vector2 position,int rarity,float spawnTime);
 WandSpawn *InitSpawnTree();
 WandTextures LoadTexturesWands();
-Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextures textures);
-void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],Animation *proAnims,WandTextures textures);
+Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextures textures,Sounds sounds);
+void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],Animation *proAnims,WandTextures textures,Sounds sounds);
 void UpdateWandPickUp(Player *p1,Player *p2,Wands worldWands[]);
+Sounds LoadSounds();

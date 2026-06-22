@@ -57,11 +57,16 @@ static void DrawPlayerCard(Rectangle card, Player *player, const char *playerLab
     DrawControlRow(card.x + pad, rowY + rowGap * 3, innerWidth, "Pick up",    player->keyPick,   rowColor);
     DrawControlRow(card.x + pad, rowY + rowGap * 4, innerWidth, "Attack",     player->keyAttack, rowColor);
 
+    Color noteColor = (Color){ 150, 135, 190, 255 };
+    int noteFontSize = 16;
+
+    char jumpNote[64];
+    snprintf(jumpNote, sizeof(jumpNote), "Double jump: press %s twice in the air",KeyToString(player->keyJump));
+    DrawText(jumpNote, (int)(card.x + pad), (int)(rowY + rowGap * 5 + 6), noteFontSize, noteColor);
+
     char dashNote[64];
-    snprintf(dashNote, sizeof(dashNote), "Dash: double-tap %s or %s",
-             KeyToString(player->keyLeft), KeyToString(player->keyRight));
-    DrawText(dashNote, (int)(card.x + pad), (int)(rowY + rowGap * 5 + 6), 16,
-             (Color){ 150, 135, 190, 255 });
+    snprintf(dashNote, sizeof(dashNote), "Dash: double-tap %s or %s",KeyToString(player->keyLeft), KeyToString(player->keyRight));
+    DrawText(dashNote, (int)(card.x + pad), (int)(rowY + rowGap * 5 + 6 + noteFontSize + 8), noteFontSize, noteColor);
 }
 static bool DrawBackButton(Rectangle rect)
 {
@@ -73,7 +78,6 @@ static bool DrawBackButton(Rectangle rect)
     Color borderColor = hovered ? (Color){ 235, 225, 255, 255 } : (Color){ 150, 135, 190, 255 };
     Color textColor   = hovered ? (Color){ 235, 225, 255, 255 } : (Color){ 220, 215, 235, 255 };
 
-    /* feedback extra al hacer click: empuja el boton levemente hacia adentro */
     Rectangle drawRect = rect;
 
     DrawRectangleRounded(drawRect, 0.3f, 8, bgColor);
@@ -98,7 +102,7 @@ bool DrawControlsScreen(Player *p1,Player *p2)
     DrawText(title, (GetScreenWidth() - titleWidth) / 2, 60, titleFontSize, (Color){ 235, 225, 255, 255 });
 
     float cardWidth  = 480.0f;
-    float cardHeight = 280.0f;
+    float cardHeight = 320.0f;
     float cardGap    = 40.0f;
     float cardsY     = 200.0f;
     float totalWidth = cardWidth * 2 + cardGap;

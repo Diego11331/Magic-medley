@@ -64,12 +64,22 @@ Animation *LoadProyectilesAnimations() {
 
     return animations;
 }
+Sounds LoadSounds(){
+    Sounds sounds={
+        .fireSound=LoadSound("resources/Sounds/fireSound.wav"),
+        .waterSound=LoadSound("resources/Sounds/waterSound.wav"),
+        .iceSound=LoadSound("resources/Sounds/iceSound.wav"),
+        .electricitySound=LoadSound("resources/Sounds/electricSound.wav")
+    };
+
+    return sounds;
+}
 WandTextures LoadTexturesWands(){
     WandTextures textures={
         .fireWand=LoadTexture("resources/Sprites/fireWand.png"), //Preparando la textura de las plataformas
-        .iceWand=LoadTexture("resources/Sprites/fireWand.png"), //Preparando la textura del bk
-        .thunderWand=LoadTexture("resources/Sprites/fireWand.png"), //Preparando la textura del cloud
-        .waterWand=LoadTexture("resources/Sprites/fireWand.png")
+        .iceWand=LoadTexture("resources/Sprites/iceWand.png"), //Preparando la textura del bk
+        .thunderWand=LoadTexture("resources/Sprites/lightiningWand.png"), //Preparando la textura del cloud
+        .waterWand=LoadTexture("resources/Sprites/waterWand.png")
     };
     return textures;
 }
@@ -121,16 +131,19 @@ WandSpawn *InitSpawnTree(){
 
     return root;
 }
-Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextures textures){
+Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextures textures,Sounds sounds){
     int wandIdentifier;
     for(int i=1;i<MAX_WORLD_WANDS;i++){
         if(!worldWands[i].isActive){
+
             worldWands[i].isActive=true;
             worldWands[i].isEquiped=false;
             worldWands[i].position=spawn->position;
             worldWands[i].wandIndentifier=i;
             worldWands[i].rarity=spawn->spawnRarity;
             worldWands[i].framesPerRow=3;
+            worldWands[i].wandHitboxSize=(Vector2){30,20};
+
             switch (worldWands[i].rarity){
            case 1: // exotico/legendario (rayo)
             worldWands[i].damage=40;
@@ -139,46 +152,58 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
             worldWands[i].velocity=3000.0f;
 
             worldWands[i].color=YELLOW;
-            worldWands[i].size=(Vector2){8,32};
+            worldWands[i].size=0.7f;
             worldWands[i].proyectileAnimation=anims[0];
 
             worldWands[i].wandSprite=textures.thunderWand;
+            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.4f;
+            
+            worldWands[i].wandSound=sounds.electricitySound;
             break;
             case 2: // epico (hielo)
             worldWands[i].damage=25;
-            worldWands[i].projectileSize=(Vector2){60,60};
+            worldWands[i].projectileSize=(Vector2){70,70};
             worldWands[i].uses=6;
             worldWands[i].velocity=900.0f;
 
-            worldWands[i].size=(Vector2){7,29};
+            worldWands[i].size=0.7f;
             worldWands[i].color=SKYBLUE;
             worldWands[i].proyectileAnimation=anims[1];
 
             worldWands[i].wandSprite=textures.iceWand;
+            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.4f;
+
+            worldWands[i].wandSound=sounds.iceSound;
             break;
             case 3: // raro (fuego)
             worldWands[i].damage=18;
-            worldWands[i].projectileSize=(Vector2){55,55};
+            worldWands[i].projectileSize=(Vector2){70,70};
             worldWands[i].uses=8;
             worldWands[i].velocity=650.0f;
 
-            worldWands[i].size=(Vector2){6,27};
+            worldWands[i].size=0.6f;
             worldWands[i].color=ORANGE;
             worldWands[i].proyectileAnimation=anims[2];
 
             worldWands[i].wandSprite=textures.fireWand;
+            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.4f;
+
+            worldWands[i].wandSound=sounds.fireSound;
             break;
             case 4: // comun (agua)
             worldWands[i].damage=10;
-            worldWands[i].projectileSize=(Vector2){80,80};
+            worldWands[i].projectileSize=(Vector2){100,100};
             worldWands[i].uses=12;
             worldWands[i].velocity=500.0f;
 
-            worldWands[i].size=(Vector2){5,25};
+            worldWands[i].size=0.6f;
             worldWands[i].color=BLUE;
             worldWands[i].proyectileAnimation=anims[3];
 
             worldWands[i].wandSprite=textures.waterWand;
+            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.4f;
+
+            worldWands[i].wandSound=sounds.waterSound;
             break;
             default:
                 break;
@@ -189,7 +214,7 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
     return NULL;
 }
 //=============================ACTUALIZACION
-void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],Animation *proAnims,WandTextures textures){
+void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],Animation *proAnims,WandTextures textures,Sounds sounds){
     if(root==NULL) return;
 
     float dt=GetFrameTime();
@@ -199,7 +224,7 @@ void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],An
     if(!root->hasWand){
         root->spawnTimer-=dt;
         if(root->spawnTimer<=0.0f){
-            newWand=CreateWand(worldWands,root,proAnims,textures);
+            newWand=CreateWand(worldWands,root,proAnims,textures,sounds);
             if(newWand!=NULL)root->hasWand=true;
         }
     }else{
@@ -216,8 +241,8 @@ void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],An
         }
     }
 
-    UpdateSpawnTree(root->left,p1,p2,worldWands,proAnims,textures);
-    UpdateSpawnTree(root->right,p1,p2,worldWands,proAnims,textures);
+    UpdateSpawnTree(root->left,p1,p2,worldWands,proAnims,textures,sounds);
+    UpdateSpawnTree(root->right,p1,p2,worldWands,proAnims,textures,sounds);
     return;
 }
 void UpdateWandPickUp(Player *p1,Player *p2,Wands worldWands[]){
@@ -225,7 +250,7 @@ void UpdateWandPickUp(Player *p1,Player *p2,Wands worldWands[]){
     Rectangle p2Rect={p2->position.x,p2->position.y,p2->size.x,p2->size.y};
 
     for(int i=0;i<MAX_WORLD_WANDS;i++){
-            Rectangle wandRect={worldWands[i].position.x,worldWands[i].position.y,worldWands[i].size.x,worldWands[i].size.y};
+            Rectangle wandRect={worldWands[i].position.x,worldWands[i].position.y,worldWands[i].wandHitboxSize.x,worldWands[i].wandHitboxSize.y};
 
             if(worldWands[i].isActive && !worldWands[i].isEquiped && IsKeyPressed(p1->keyPick) && CheckCollisionRecs(wandRect,p1Rect)){
                 if(p1->wandIdentifier[0]!=0) worldWands[p1->wandIdentifier[0]].isEquiped=false;
@@ -242,7 +267,7 @@ void UpdateWandPickUp(Player *p1,Player *p2,Wands worldWands[]){
             }
         }
 }
-void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount){
+void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure structures[],int structuresAmount,Sound damageSound){
     float dt=GetFrameTime();
     
     for(int i=0;i<MAX_PROJECTILES;i++){
@@ -253,11 +278,15 @@ void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure s
 
             Player *tarjet=(projectiles[i].owner==p1) ?p2 :p1;
             Rectangle pRect={tarjet->position.x,tarjet->position.y,tarjet->size.x,tarjet->size.y};
-            Rectangle proyectileRect={projectiles[i].position.x,projectiles[i].position.y,projectiles[i].size.x,projectiles[i].size.y};
+
+            Vector2 projectileCenter={projectiles[i].position.x + projectiles[i].animation.spriteWidth / 2.0f,projectiles[i].position.y + projectiles[i].animation.spriteHeight / 2.0f};
+            float projectileRadius = projectiles[i].hitboxSize / 2.0f; 
             
             //Colisiones con jugador
-            if(CheckCollisionRecs(proyectileRect,pRect)){
+            if(CheckCollisionCircleRec(projectileCenter,projectileRadius,pRect)){
                 tarjet->helth-=projectiles[i].damage;
+                //Sonido de dano
+                PlaySound(damageSound);
                 tarjet->damageTimer=tarjet->damageTime; //Inicio el efecto de dano
 
                 //Efecto de empuje de la varita de agua
@@ -282,7 +311,7 @@ void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure s
             
             //Colisiones con estructuras
             for(int j=0;j<structuresAmount;j++){
-                if(CheckCollisionRecs(proyectileRect,structures[j].rect)){
+                if(CheckCollisionCircleRec(projectileCenter,projectileRadius,structures[j].rect)){
                     if(projectiles[i].rarity!=1)projectiles[i].isActive=false; //El de rayo atraviesa estructuras
                 }
             }
@@ -309,11 +338,22 @@ void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 off
         if(IsKeyPressed(p1->keyAttack) && wands[i].uses>0 && wands[i].isEquiped && wands[i].wandIndentifier==p1->wandIdentifier[0]){
         for(int j=0;j<MAX_PROJECTILES;j++){
             if(!projectiles[j].isActive){
-                projectiles[j].position.x=wands[i].position.x+(wands[i].size.x*p1->direction);
-                projectiles[j].position.y=wands[i].position.y-wands[i].size.y;
+                float tipOffset = (wands[i].wandSprite.height*wands[i].size) / 2.0f; 
+                float cos45     = 0.7071f;
+
+                // Punta de la varita en world space
+                float tipX = wands[i].position.x + (tipOffset * cos45 * p1->direction);
+                float tipY = wands[i].position.y - (tipOffset * cos45);
+
+                // Centramos el proyectil sobre la punta
+                projectiles[j].position.x = tipX - wands[i].projectileSize.x / 2.0f;
+                projectiles[j].position.y = (tipY - wands[i].projectileSize.y / 2.0f)+25;
+
+
                 projectiles[j].velocity=wands[i].velocity;
                 projectiles[j].velocity*=p1->direction;
                 projectiles[j].size=wands[i].projectileSize;
+                projectiles[j].hitboxSize=wands[i].projectileHitboxSize;
                 projectiles[j].damage=wands[i].damage;
                 projectiles[j].owner=p1; //El que lanzo el hechizo
 
@@ -323,6 +363,9 @@ void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 off
 
                 projectiles[j].isActive=true;
                 wands[i].uses--;
+
+                //Reproduzco el sonido
+                PlaySound(wands[i].wandSound);
                 j=MAX_PROJECTILES;
                 }
             }
@@ -331,11 +374,22 @@ void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 off
         for(int j=0;j<MAX_PROJECTILES;j++){
             if(!projectiles[j].isActive){
 
-                projectiles[j].position.x=wands[i].position.x+(wands[i].size.x*p2->direction);
-                projectiles[j].position.y=wands[i].position.y-wands[i].size.y;
+                float tipOffset = (wands[i].wandSprite.height*wands[i].size) / 2.0f;   // mitad del largo de la varita
+                float cos45     = 0.7071f;
+
+                // Punta de la varita en world space
+                float tipX = wands[i].position.x + (tipOffset * cos45 * p1->direction);
+                float tipY = wands[i].position.y - (tipOffset * cos45)+25;
+
+                // Centramos el proyectil sobre la punta
+                projectiles[j].position.x = tipX - wands[i].projectileSize.x / 2.0f;
+                projectiles[j].position.y = tipY - wands[i].projectileSize.y / 2.0f;
+
+
                 projectiles[j].velocity=wands[i].velocity;
                 projectiles[j].velocity*=p2->direction;
                 projectiles[j].size=wands[i].projectileSize;
+                projectiles[j].hitboxSize=wands[i].projectileHitboxSize;
                 projectiles[j].damage=wands[i].damage;
                 projectiles[j].owner=p2; //El que lanzo el hechizo
 
@@ -345,6 +399,9 @@ void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 off
 
                 projectiles[j].isActive=true;
                 wands[i].uses--;
+
+                //Reproduzco el sonido
+                PlaySound(wands[i].wandSound);
                 j=MAX_PROJECTILES;
                 }
             }
@@ -353,27 +410,34 @@ void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 off
 }
 
 //=========================DIBUJADO
-void DrawWand(Wands wands[],Player *p1,Player *p2,WandTextures textures){
-    for(int i=0;i<MAX_WORLD_WANDS;i++){
-        Player *owner=NULL;
-        float wandFloatEffect=sinf(GetTime()*3.0f+i*1.2f)*4.0f;
-        
-        if(wands[i].wandIndentifier==p1->wandIdentifier[0]) owner=p1;
-        else if(wands[i].wandIndentifier==p2->wandIdentifier[0]) owner=p2;
+void DrawWand(Wands wands[], Player *p1, Player *p2, WandTextures textures)
+{
+    for (int i = 0; i < MAX_WORLD_WANDS; i++) {
+        if (!wands[i].isActive) continue;
 
-        Vector2 origin = { wands[i].size.x / 2, wands[i].size.y / 2 };
+        Player *owner = NULL;
+        if (wands[i].wandIndentifier == p1->wandIdentifier[0]) owner = p1;
+        else if (wands[i].wandIndentifier == p2->wandIdentifier[0]) owner = p2;
 
-        if(wands[i].isActive && wands[i].isEquiped){
-            Rectangle rect=(Rectangle){wands[i].position.x+origin.x,wands[i].position.y+origin.y,wands[i].size.x,wands[i].size.y};
-            float rotation=45*owner->direction;
-            DrawRectanglePro(rect,(Vector2){0,0},rotation,wands[i].color);
-            DrawTexturePro(wands[i].wandSprite,(Rectangle){0,0,wands[i].wandSprite.width,wands[i].wandSprite.height},rect,(Vector2){0,0},rotation,WHITE);
-        }else if(wands[i].isActive && !wands[i].isEquiped){
-            Rectangle rect=(Rectangle){wands[i].position.x,wands[i].position.y+wandFloatEffect,wands[i].size.x,wands[i].size.y};
-            float rotation=45;
-            // DrawRectanglePro(rect,(Vector2){0,0},rotation,wands[i].color);
-            DrawTexturePro(wands[i].wandSprite,(Rectangle){0,0,wands[i].wandSprite.width,wands[i].wandSprite.height},rect,(Vector2){0,0},rotation,WHITE);
-                                                                                           
+        float dw=(float)wands[i].wandSprite.width;
+        float dh=(float)wands[i].wandSprite.height;
+        float scale=wands[i].size;
+        float sdw=dw*scale;
+        float sdh=dh*scale;
+        Vector2 origin={sdw/2.0f,sdh/2.0f};
+        float wandFloatEffect = sinf(GetTime() * 3.0f + i * 1.2f) * 4.0f;
+        float spawnPosOffset=-30.0f;
+
+        if (wands[i].isEquiped && owner != NULL) {
+            Rectangle src = (owner->direction < 0) ? (Rectangle){ dw, 0, -dw, dh } : (Rectangle){ 0,  0,  dw, dh };
+            Rectangle dst = { wands[i].position.x, wands[i].position.y, sdw, sdh };
+            float rotation = 45.0f * owner->direction;
+            DrawTexturePro(wands[i].wandSprite, src, dst, origin, rotation, WHITE);
+
+        } else if (!wands[i].isEquiped) {
+            Rectangle src = { 0, 0, dw, dh };
+            Rectangle dst = {wands[i].position.x,wands[i].position.y+wandFloatEffect+spawnPosOffset, sdw, sdh };
+            DrawTexturePro(wands[i].wandSprite, src, dst, (Vector2){0,0}, 45.0f, WHITE);
         }
     }
 }
@@ -382,7 +446,8 @@ void DrawProjectiles(Projectile projectiles[],Player *p1,Player *p2){
     for(int i=0;i<MAX_PROJECTILES;i++){
        if(projectiles[i].isActive){
             int direction=(projectiles[i].velocity>0) ?1 :-1;
-            direction*=(projectiles[i].owner==p1) ?-1 :1;
+            direction*=(projectiles[i].owner==p1 && projectiles[i].rarity!=4) ?-1 :1;
+            // if() direction*=-1; //El de agua
             
             DrawAnimation(&projectiles[i].animation,projectiles[i].framesPerRow,projectiles[i].size,projectiles[i].position,projectiles[i].animation.spriteWidth,projectiles[i].animation.spriteHeight,direction,WHITE);
             
