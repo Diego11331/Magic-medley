@@ -298,10 +298,11 @@ void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure s
                 }
                 if(projectiles[i].rarity==3){
                     KeyboardKey aux=tarjet->keyLeft;
-                    tarjet->keyLeft=tarjet->keyRight;
-                    tarjet->keyRight=aux;
-                    tarjet->invertControlsTimer=tarjet->invertControlsTimerTime;
-
+                    if(tarjet->invertControlsTimer<=0){
+                        tarjet->keyLeft=tarjet->keyRight;
+                        tarjet->keyRight=aux;
+                        tarjet->invertControlsTimer=tarjet->invertControlsTimerTime;
+                    }
                 }
                 if(projectiles[i].rarity==2){
                     tarjet->isFreezedTimer=tarjet->isFreezedTimerTime;
@@ -319,7 +320,7 @@ void UpdateProjectile(Projectile projectiles[],Player *p1,Player *p2,Structure s
             if(projectiles[i].position.x>SCREEN_W+projectiles[i].size.x || projectiles[i].position.x<-projectiles[i].size.x) projectiles[i].isActive=false;
         }
         
-    }
+    } 
 }
 void UpdateWand(Wands wands[],Player *p1,Player *p2,Vector2 offsetP1,Vector2 offsetP2,int flipPlayerOffset,Projectile projectiles[]){
     if(p1->direction<0) offsetP1.x+=flipPlayerOffset;
@@ -447,7 +448,7 @@ void DrawProjectiles(Projectile projectiles[],Player *p1,Player *p2){
        if(projectiles[i].isActive){
             int direction=(projectiles[i].velocity>0) ?1 :-1;
             direction*=(projectiles[i].owner==p1 && projectiles[i].rarity!=4) ?-1 :1;
-            // if() direction*=-1; //El de agua
+            direction*=(projectiles[i].owner==p2 && projectiles[i].rarity!=4) ?-1 :1;
             
             DrawAnimation(&projectiles[i].animation,projectiles[i].framesPerRow,projectiles[i].size,projectiles[i].position,projectiles[i].animation.spriteWidth,projectiles[i].animation.spriteHeight,direction,WHITE);
             

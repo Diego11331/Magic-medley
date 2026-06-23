@@ -8,7 +8,7 @@
 
 
 void UpdatePlayer(Player *p,float dt,Structure structures[],int structuresLenght){
-    float MOV_SPD=(!p->isFreezedTimer>0)?280.0f :100.0f;
+    float MOV_SPD=(!(p->isFreezedTimer>0))?280.0f :100.0f;
     
     //Actualizando timers
     if(!p->onGround) p->coyoteTimer-=dt;

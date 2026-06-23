@@ -28,19 +28,16 @@ void ResetTimerSapwns(WandSpawn *root){
 void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root,GameState currentState,int *p1Score,int *p2Score,float *resetTimer,float *resetTimerTime){
     bool p1Die=(p1->helth<=0);
     bool p2Die=(p2->helth<=0);
-    bool playerGoToMenu=currentState==GAME && IsKeyDown(KEY_BACKSPACE);
+    bool playerGoToMenu=currentState==GAME && IsKeyPressed(KEY_BACKSPACE);
 
     if(p1->position.y>screenHeight+300){
         p1Die=true;
         p1->helth=0;
     } 
     if(p2->position.y>screenHeight+300){
-        p1->helth=0;
+        p2->helth=0;
         p2Die=true;
     } 
-
-    if(p1Die) (*p2Score)++;
-    if(p2Die) (*p1Score)++;
 
     if(p1Die || p2Die || playerGoToMenu){
         //Congelo los jugadores
@@ -52,7 +49,11 @@ void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector
 
         *resetTimer-=GetFrameTime();
 
-        if(*resetTimer<=0){
+        if(*resetTimer<=0  || playerGoToMenu){
+
+            if(p1Die) (*p2Score)++;
+            if(p2Die) (*p1Score)++;
+            
             p1->position=p1SpawnPos;
             p2->position=p2SpawnPos;
             p1->helth=initialHelth;
@@ -68,8 +69,8 @@ void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector
             p1->isFreezedTimer=0;
             p2->isFreezedTimer=0;
 
-            p1->invertControlsTimer=0;
-            p2->invertControlsTimer=0;
+            if(p1->invertControlsTimer>0) p1->invertControlsTimer=-1;
+            if(p2->invertControlsTimer>0) p2->invertControlsTimer=-1;
 
             for(int i=0;i<MAX_WORLD_WANDS;i++) wands[i]=(Wands){0};
             

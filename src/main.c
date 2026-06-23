@@ -108,6 +108,7 @@ int main(void)
 {
     //Estado inicial de la maquina
     GameState currentState=MENU;
+    GameState prevState=MENU;
 
     InitWindow(SCREEN_W, SCREEN_H, "Magic medley");
 
@@ -203,6 +204,15 @@ int main(void)
     Sounds sounds=LoadSounds();
     Sound damageSound=LoadSound("resources/Sounds/hurtSound.mp3");
 
+    //Cargo la musica
+    Music menuMusic=LoadMusicStream("resources/Sounds/menuMusic.mp3");
+    Music GameMusic=LoadMusicStream("resources/Sounds/gameMusic.mp3");
+
+    menuMusic.looping=true;
+    GameMusic.looping=true;
+
+    PlayMusicStream(menuMusic);
+    PlayMusicStream(GameMusic);
 
     //Textura del titulo
     Texture2D gameTitleTex=LoadTexture("resources/Sprites/gameTitle.png");
@@ -232,6 +242,26 @@ int main(void)
             
             UpdateSpawnTree(spawnRoot,&p1,&p2,worldWands,proyectilesAnimations,wandsTextures,sounds);
             UpdateWandPickUp(&p1,&p2,worldWands);
+
+            //Actualizo la musica del juego
+             //Actualizo la musica del menu
+            if(prevState==MENU){
+                StopMusicStream(GameMusic);
+                PlayMusicStream(GameMusic);
+            }else{
+                UpdateMusicStream(GameMusic);
+            }
+            break;
+            case MENU: 
+            case CONTROLS: 
+            case SCORE: 
+            //Actualizo la musica del menu
+            if(prevState==GAME){
+                StopMusicStream(menuMusic);
+                PlayMusicStream(menuMusic);
+            }else{
+                UpdateMusicStream(menuMusic);
+            }
             break;
         default:
             break;
@@ -242,6 +272,9 @@ int main(void)
         BeginDrawing();
         ClearBackground(bgColor);
         
+        //Guardo el estado anterior
+        prevState=currentState;
+
         //Dibujado condicional
         switch (currentState){
         case MENU:
@@ -301,7 +334,8 @@ int main(void)
     //No es necesario descargar las texturas, pero si tengo varios niveles, estas seguiran ocupando memoria ram
     // UnloadTexture(bkg);
     // UnloadTexture(brick);
-    
+    UnloadMusicStream(menuMusic);
+    UnloadMusicStream(GameMusic);
     CloseAudioDevice();
     CloseWindow();
     return 0;
