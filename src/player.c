@@ -212,7 +212,7 @@ void InitPlayers(Player players[2]){
         .isFreezedTimerTime=3.0f
     };
 }
-void DrawPlayerAnim(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int spriteHeight,int pDirection,float damageTimer){
+void DrawPlayerAnim(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int spriteHeight,int pDirection,float damageTimer,float pHealth){
     Color color =(damageTimer>0) ?RED :WHITE;
-    DrawAnimation(self,numFramesPerRow,pSize,pPos,spriteWidth,spriteHeight,pDirection,color);
+    if(pHealth>0) DrawAnimation(self,numFramesPerRow,pSize,pPos,spriteWidth,spriteHeight,pDirection,color);
 }

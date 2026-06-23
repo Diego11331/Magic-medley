@@ -56,4 +56,4 @@ typedef struct Player{
 }Player;
 void UpdatePlayer(Player *p,float dt,Structure structures[],int structuresLenght);
 void InitPlayers(Player players[2]);
-void DrawPlayerAnim(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int spriteHeight,int pDirection,float damageTimer);
+void DrawPlayerAnim(Animation *self,int numFramesPerRow,Vector2 pSize,Vector2 pPos,int spriteWidth,int spriteHeight,int pDirection,float damageTimer,float pHelath);

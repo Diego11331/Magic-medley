@@ -203,6 +203,12 @@ int main(void)
     Sounds sounds=LoadSounds();
     Sound damageSound=LoadSound("resources/Sounds/hurtSound.mp3");
 
+
+    //Textura del titulo
+    Texture2D gameTitleTex=LoadTexture("resources/Sprites/gameTitle.png");
+
+    //Timers para resetear el juego
+    float resetTimerTime=2.0f,resetTimer=resetTimerTime;
     while (!WindowShouldClose())
     {
         //Actualizacion de variables condicional
@@ -231,7 +237,7 @@ int main(void)
             break;
         }
         //Tiene que estar afuera porque sino no recibe currentState acutalizado
-        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState,&p1Score,&p2Score);
+        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState,&p1Score,&p2Score,&resetTimer,&resetTimerTime);
 
         BeginDrawing();
         ClearBackground(bgColor);
@@ -241,7 +247,7 @@ int main(void)
         case MENU:
             for(int i = 0; i < BUTTON_COUNT; i++) {
                 bool isPrimary = (buttons[i].id == BUTTON_PLAY);
-                bool clicked = DrawMenuButton(&buttons[i], isPrimary,titleColor,subtitleColor);
+                bool clicked = DrawMenuButton(&buttons[i], isPrimary,titleColor,subtitleColor,gameTitleTex);
  
                 if(clicked){
                     switch(buttons[i].id) {
@@ -261,9 +267,9 @@ int main(void)
             DrawPlayerInfo(&p1,&p2,worldWands,heart,sword);
 
             //Dibujando jugadores
-            DrawPlayerAnim(&p1Anim,3,p1.size,p1.position,p1Anim.spriteWidth,p1Anim.spriteHeight,-p1.direction,p1.damageTimer);
-            if(p2.velocity.x!=0) DrawPlayerAnim(&p2RunAnim,4,p2.size,p2.position,p2RunAnim.spriteWidth,p2RunAnim.spriteHeight,p2.direction,p2.damageTimer);
-            else DrawPlayerAnim(&p2IdleAnim,2,p2.size,p2.position,p2IdleAnim.spriteWidth,p2IdleAnim.spriteHeight,p2.direction,p2.damageTimer);
+            DrawPlayerAnim(&p1Anim,3,p1.size,p1.position,p1Anim.spriteWidth,p1Anim.spriteHeight,-p1.direction,p1.damageTimer,p1.helth);
+            if(p2.velocity.x!=0) DrawPlayerAnim(&p2RunAnim,4,p2.size,p2.position,p2RunAnim.spriteWidth,p2RunAnim.spriteHeight,p2.direction,p2.damageTimer,p2.helth);
+            else DrawPlayerAnim(&p2IdleAnim,2,p2.size,p2.position,p2IdleAnim.spriteWidth,p2IdleAnim.spriteHeight,p2.direction,p2.damageTimer,p2.helth);
 
             //Dibujando varitas
             DrawWand(worldWands,&p1,&p2,wandsTextures);

@@ -201,7 +201,7 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
             worldWands[i].proyectileAnimation=anims[3];
 
             worldWands[i].wandSprite=textures.waterWand;
-            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.4f;
+            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.6f;
 
             worldWands[i].wandSound=sounds.waterSound;
             break;

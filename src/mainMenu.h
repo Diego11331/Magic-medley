@@ -14,4 +14,4 @@ typedef struct MenuButton{
     bool       isHovered;
     bool       isPressed;
 }MenuButton;
-bool DrawMenuButton(MenuButton *btn, bool isPrimary,Color titleColor,Color subtitleColor);
+bool DrawMenuButton(MenuButton *btn, bool isPrimary,Color titleColor,Color subtitleColor,Texture2D titleTex);
