@@ -25,7 +25,7 @@ void ResetTimerSapwns(WandSpawn *root){
     ResetTimerSapwns(root->left);
     ResetTimerSapwns(root->right);
 }
-void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root,GameState currentState,int *p1Score,int *p2Score,float *resetTimer,float *resetTimerTime){
+void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector2 p2SpawnPos,float initialHelth,Wands wands[],WandSpawn *root,GameState currentState,int *p1Score,int *p2Score,float *resetTimer,float *resetTimerTime,Music bkgMusic){
     bool p1Die=(p1->helth<=0);
     bool p2Die=(p2->helth<=0);
     bool playerGoToMenu=currentState==GAME && IsKeyPressed(KEY_BACKSPACE);
@@ -50,6 +50,9 @@ void ResetLevel(Player *p1,Player *p2,int screenHeight,Vector2 p1SpawnPos,Vector
         *resetTimer-=GetFrameTime();
 
         if(*resetTimer<=0  || playerGoToMenu){
+            //Reinicio la musica
+            StopMusicStream(bkgMusic);
+            PlayMusicStream(bkgMusic);
 
             if(p1Die) (*p2Score)++;
             if(p2Die) (*p1Score)++;

@@ -1,11 +1,11 @@
 #include "raylib.h"
-#include "player.h"   /* ajusta esto al header donde tengas definido el struct Player */
+#include "player.h"   
 #include <stdbool.h>
 #include <stdio.h>
 #include "gameManager.h"
 
-/* Convierte una tecla de raylib en un texto legible para mostrarla en pantalla */
-static const char *KeyToString(int key)
+// Convierte una tecla de raylib en un texto legible para mostrarla en pantalla
+const char *KeyToString(int key)
 {
     static char letterBuf[2];
     if (key >= KEY_A && key <= KEY_Z) {
@@ -25,8 +25,8 @@ static const char *KeyToString(int key)
     }
 }
 
-/* Dibuja una fila "accion ........ tecla" dentro de una tarjeta de jugador */
-static void DrawControlRow(float x, float y, float width, const char *action, int key, Color textColor)
+// Dibuja una fila "accion y tecla" dentro de una tarjeta de jugador
+void DrawControlRow(float x, float y, float width, const char *action, int key, Color textColor)
 {
     int fontSize = 20;
     DrawText(action, (int)x, (int)y, fontSize, textColor);
@@ -35,8 +35,8 @@ static void DrawControlRow(float x, float y, float width, const char *action, in
     DrawText(keyLabel, (int)(x + width - keyWidth), (int)y, fontSize, textColor);
 }
 
-/* Dibuja la tarjeta completa con los controles de un jugador */
-static void DrawPlayerCard(Rectangle card, Player *player, const char *playerLabel)
+// Dibuja la tarjeta completa con los controles de un jugador 
+void DrawPlayerCard(Rectangle card, Player *player, const char *playerLabel)
 {
     DrawRectangleRounded(card, 0.08f, 8, (Color){ 38, 32, 60, 255 });
     DrawRectangleLinesEx(card, 2.0f, player->color);
@@ -67,8 +67,12 @@ static void DrawPlayerCard(Rectangle card, Player *player, const char *playerLab
     char dashNote[64];
     snprintf(dashNote, sizeof(dashNote), "Dash: double-tap %s or %s",KeyToString(player->keyLeft), KeyToString(player->keyRight));
     DrawText(dashNote, (int)(card.x + pad), (int)(rowY + rowGap * 5 + 6 + noteFontSize + 8), noteFontSize, noteColor);
+
+    char backspaceNote[64];
+    snprintf(backspaceNote, sizeof(backspaceNote), "Go to menu: tap BACKSPACE");
+    DrawText(backspaceNote, (int)(card.x + pad), (int)(rowY + rowGap * 6 + 6 + noteFontSize), noteFontSize, noteColor);
 }
-static bool DrawBackButton(Rectangle rect)
+bool DrawBackButton(Rectangle rect)
 {
     Vector2 mouse = GetMousePosition();
     bool hovered = CheckCollisionPointRec(mouse, rect);
@@ -102,7 +106,7 @@ bool DrawControlsScreen(Player *p1,Player *p2)
     DrawText(title, (GetScreenWidth() - titleWidth) / 2, 60, titleFontSize, (Color){ 235, 225, 255, 255 });
 
     float cardWidth  = 480.0f;
-    float cardHeight = 320.0f;
+    float cardHeight = 340.0f;
     float cardGap    = 40.0f;
     float cardsY     = 200.0f;
     float totalWidth = cardWidth * 2 + cardGap;
@@ -114,7 +118,7 @@ bool DrawControlsScreen(Player *p1,Player *p2)
     DrawPlayerCard(leftCard,  p1, "Player 1");
     DrawPlayerCard(rightCard, p2, "Player 2");
 
-    /* Boton Back: esquina inferior izquierda, mismo margen que usan las tarjetas */
+    //Boton Back: esquina inferior izquierda, mismo margen que usan las tarjetas
     float backWidth  = 140.0f;
     float backHeight = 48.0f;
     float backMargin = 30.0f;

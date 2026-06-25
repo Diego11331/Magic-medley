@@ -267,7 +267,7 @@ int main(void)
             break;
         }
         //Tiene que estar afuera porque sino no recibe currentState acutalizado
-        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState,&p1Score,&p2Score,&resetTimer,&resetTimerTime);
+        ResetLevel(&p1,&p2,SCREEN_H,(Vector2){128, 200},(Vector2){1000, 100},50,worldWands,spawnRoot,currentState,&p1Score,&p2Score,&resetTimer,&resetTimerTime,GameMusic);
 
         BeginDrawing();
         ClearBackground(bgColor);
@@ -337,6 +337,7 @@ int main(void)
     UnloadMusicStream(menuMusic);
     UnloadMusicStream(GameMusic);
     CloseAudioDevice();
+    FreeSpawnTree(spawnRoot);
     CloseWindow();
     return 0;
 }

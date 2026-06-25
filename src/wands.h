@@ -97,3 +97,4 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
 void UpdateSpawnTree(WandSpawn *root,Player *p1,Player *p2,Wands worldWands[],Animation *proAnims,WandTextures textures,Sounds sounds);
 void UpdateWandPickUp(Player *p1,Player *p2,Wands worldWands[]);
 Sounds LoadSounds();
+void FreeSpawnTree(WandSpawn *root);

@@ -201,7 +201,7 @@ Wands *CreateWand(Wands worldWands[],WandSpawn *spawn,Animation *anims,WandTextu
             worldWands[i].proyectileAnimation=anims[3];
 
             worldWands[i].wandSprite=textures.waterWand;
-            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.6f;
+            worldWands[i].projectileHitboxSize=worldWands[i].projectileSize.x*0.4f;
 
             worldWands[i].wandSound=sounds.waterSound;
             break;
@@ -450,8 +450,16 @@ void DrawProjectiles(Projectile projectiles[],Player *p1,Player *p2){
             direction*=(projectiles[i].owner==p1 && projectiles[i].rarity!=4) ?-1 :1;
             direction*=(projectiles[i].owner==p2 && projectiles[i].rarity!=4) ?-1 :1;
             
-            DrawAnimation(&projectiles[i].animation,projectiles[i].framesPerRow,projectiles[i].size,projectiles[i].position,projectiles[i].animation.spriteWidth,projectiles[i].animation.spriteHeight,direction,WHITE);
-            
+            DrawAnimation(&projectiles[i].animation,projectiles[i].framesPerRow,projectiles[i].size,projectiles[i].position,projectiles[i].animation.spriteWidth,projectiles[i].animation.spriteHeight,direction,WHITE); 
         }
     }
+}
+void FreeSpawnTree(WandSpawn *root){
+    if(root==NULL) return;
+
+    FreeSpawnTree(root->left);
+    FreeSpawnTree(root->right);
+    free(root);
+
+    return;
 }

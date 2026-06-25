@@ -51,15 +51,14 @@ void DrawStructures(Texture2D brick,Texture2D bkg,Texture2D cloud,int structures
 
     
     //Dibujando estucturas
-            for(int i=0;i<structuresLenght;i++){
-                float scale=.5f;
-                float tileDrawWidth=brick.width*scale;
-                float tiles=structures[i].rect.width/tileDrawWidth;
-                
-                for(int j=0;j<tiles;j++){
-                    
-                    DrawTextureEx(brick,(Vector2){structures[i].rect.x+j*tileDrawWidth,structures[i].rect.y},0,scale,WHITE);
-                }
-                
-            }
+    for(int i=0;i<structuresLenght;i++){
+        float scale=.5f;
+        float tileDrawWidth=brick.width*scale;
+        float tiles=structures[i].rect.width/tileDrawWidth;
+        
+        for(int j=0;j<tiles;j++){
+            
+            DrawTextureEx(brick,(Vector2){structures[i].rect.x+j*tileDrawWidth,structures[i].rect.y},0,scale,WHITE);
+        }
+    }
 }
